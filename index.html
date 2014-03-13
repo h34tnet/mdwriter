@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>mdEdit</title>
+<script src="lib/markdown.js"></script>
+<script>
+	var $ = function (id) { return document.getElementById(id); };
+	document.addEventListener("DOMContentLoaded", function () {
+		var $editor = $("editor"), $preview = $("preview");
+		var timer;
+	
+		if (localStorage.getItem("text")) {
+			$editor.value = localStorage["text"];
+			preview.innerHTML = markdown.toHTML($editor.value);
+		}
+		
+		$editor.addEventListener("input", function () {
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				preview.innerHTML = markdown.toHTML($editor.value);
+				localStorage.setItem("text", $editor.value);
+			}, 500);
+		});
+	});
+</script>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:300,700' rel='stylesheet' type='text/css'>
+<style type="text/css">
+BODY {
+	margin: 0;
+	padding: 0;
+}
+
+* {
+	font-size: 1em;
+	color: #666;
+}
+
+#editor {
+	left: 0;
+	background-color: #F0F0F0;
+}
+
+#preview {
+	right: 0;
+	overflow-y: scroll;
+}
+
+#preview P {
+	padding: 0;
+	margin: 0 0 1em 0;
+}
+
+#editor, #preview {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	margin: 0;
+	width: 50%;
+	box-sizing: border-box;
+	padding: 16px;
+	
+	font-family: 'open sans', verdana, arial, sans-serif;
+	font-size: .8em;
+	line-height: 150%;
+}
+
+H1, H2, H3, H4, H5, H6 {
+	font-weight: normal;
+	color: #000;
+	line-height: 200%;
+}
+
+H1 { font-size: 2.4em; text-align: center; }
+H2 { font-size: 1.8em; text-transform: uppercase; }
+H3 { font-size: 1.6em; text-transform: capitalize;  }
+H4 { font-size: 1.4em; }
+H5 { font-size: 1.2em; }
+H6 { font-size: 1.1em; }
+
+#preview IMG {
+	max-width: 100%;
+}
+
+STRONG, B {
+	font-weight: bold;
+	color: #000;
+}
+
+BLOCKQUOTE {
+	padding-left: 32px;
+	margin-left: 32px;
+	border: 4px solid #A0A0A0;
+	border-width: 0px 0px 0px 4px;
+}
+
+
+</style>
+	
+</head>
+<body>
+	<textarea id="editor" rows="20" cols="80" placeholder="type here"></textarea>
+	<div id="preview"></div>
+</body>
+</html>
