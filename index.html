@@ -5,26 +5,93 @@
 <script src="lib/markdown.js"></script>
 <script>
 	var $ = function (id) { return document.getElementById(id); };
-	document.addEventListener("DOMContentLoaded", function () {
-		var $editor = $("editor"), $preview = $("preview");
-		var timer;
 	
-		if (localStorage.getItem("text")) {
-			$editor.value = localStorage["text"];
-			preview.innerHTML = markdown.toHTML($editor.value);
+	var getKeys = function () {
+		var keys = [];
+		for (var k in localStorage)
+			keys.push(k);
+		return keys;
+	};
+	
+	var save = function (key, value) {
+		localStorage.setItem(key, value);
+	};
+	
+	var load = function (key) {
+		return localStorage.getItem(key);
+	};
+	
+	var updateSelection = function ($select, keys, key) {
+		while ($select.hasChildNodes()) $select.removeChild($select.firstChild);
+		for (var i=0, ii=keys.length; i<ii; i++) {
+			var $option = document.createElement("option");
+			$option.textContent = keys[i];
+			
+			$option.selected = (keys[i] === key);
+			
+			$select.appendChild($option);
 		}
+	};
+	
+	document.addEventListener("DOMContentLoaded", function () {
+		var $editor = $("editor"), $preview = $("preview"), $select = $("select"), $add = $("add"), $header = $("header");
+		var timer;
+		
+		var setEditorContents = function (text) {
+			$editor.value = text;
+		};
+		
+		var updateDisplay = function (text) {
+			$preview.innerHTML = markdown.toHTML(text);
+		};
+		
+		var setDocument = function (text) {
+			setEditorContents(text);
+			updateDisplay($editor.value);
+		};
+		
+		var key, keys = getKeys();
+		if (keys.length == 0) {
+			key = "default";
+			save(key, "");
+		} else key = keys[0];
+		
+		// create new document
+		$add.addEventListener("click", function () {
+			var newkey = prompt("Name?");
+			if (newkey !== null) {
+				save(newkey, load(newkey));
+				keys = getKeys();
+				key = newkey;
+				updateSelection($select, keys, key);
+				setDocument(load(key));
+			}
+		});
+		
+		var text = load(key);
+		setDocument(text);
+			
+		updateSelection($select, keys, key);
+		
+		$select.addEventListener("change", function (e) {
+			save(key, $editor.value);
+			key = $select.value;
+			setDocument(load(key));
+		});
 		
 		$editor.addEventListener("input", function () {
 			clearTimeout(timer);
 			timer = setTimeout(function () {
-				preview.innerHTML = markdown.toHTML($editor.value);
-				localStorage.setItem("text", $editor.value);
+				var text = $editor.value;
+				save(key, text);
+				updateDisplay(text);
 			}, 500);
 		});
 	});
 </script>
 <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,700' rel='stylesheet' type='text/css'>
 <style type="text/css">
+
 BODY {
 	margin: 0;
 	padding: 0;
@@ -62,6 +129,7 @@ BODY {
 	font-family: 'open sans', verdana, arial, sans-serif;
 	font-size: .8em;
 	line-height: 150%;
+	top: 32px;
 }
 
 H1, H2, H3, H4, H5, H6 {
@@ -93,11 +161,50 @@ BLOCKQUOTE {
 	border-width: 0px 0px 0px 4px;
 }
 
+@media print {
+#editor {
+	display: none;
+}
+
+#preview {
+	top: 0;
+	position: static;
+	width: 100%;
+	overflow: hidden;
+}
+
+body {
+	overflow: hidden;
+}
+
+* {
+	font-size: 0.8em;
+}
+
+#header {
+	display: none;
+}
+}
+
+#header {
+	height: 32px;
+	line-height: 32px;
+	background-color: #333;
+	padding: 0 32px;
+}
+
+#header #select, #header #add {
+	height: 32px;
+	line-height: 32px;
+	font-size: 24px;
+}
+
 
 </style>
 	
 </head>
 <body>
+	<div id="header"><select id="select" /> <input type="button" id="add" value="+"></div>
 	<textarea id="editor" rows="20" cols="80" placeholder="type here"></textarea>
 	<div id="preview"></div>
 </body>
