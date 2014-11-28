@@ -9,8 +9,17 @@
 	var getKeys = function () {
 		var keys = [];
 		for (var k in localStorage)
-			keys.push(k);
+			if (k.substr(0, 1) !== "_")
+				keys.push(k);
 		return keys;
+	};
+	
+	var setLastKey = function (key) {
+		localStorage._lastKey = key;
+	};
+	
+	var getLastKey = function () {
+		return localStorage._lastKey !== "undefined" ? localStorage._lastKey : "default";
 	};
 	
 	var save = function (key, value) {
@@ -50,11 +59,8 @@
 			updateDisplay($editor.value);
 		};
 		
-		var key, keys = getKeys();
-		if (keys.length == 0) {
-			key = "default";
-			save(key, "");
-		} else key = keys[0];
+		var key = getLastKey(), keys = getKeys();
+		
 		
 		// create new document
 		$add.addEventListener("click", function () {
@@ -76,12 +82,16 @@
 		$select.addEventListener("change", function (e) {
 			save(key, $editor.value);
 			key = $select.value;
+			setLastKey(key);
 			setDocument(load(key));
 		});
 		
 		$editor.addEventListener("input", function () {
+			var savedColor = $header.style.backgroundColor;
+			$header.style.backgroundColor = "#999";
 			clearTimeout(timer);
 			timer = setTimeout(function () {
+				$header.style.backgroundColor = savedColor;
 				var text = $editor.value;
 				save(key, text);
 				updateDisplay(text);
